@@ -1,6 +1,8 @@
 package me.kalmemarq.argoption;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,11 +16,16 @@ public class ArgOption<T> {
     protected T value;
     protected Function<String, T> creator;
 
+    @SuppressWarnings("unchecked")
     protected ArgOption(Class<T> clazz, String name, String alias) {
         this.type = clazz;
         this.name = name;
         this.alias = alias;
         this.value = null;
+
+        if (clazz == Path.class) {
+            this.creator = value -> (T) Paths.get(value);
+        }
     }
 
     public ArgOption<T> required() {
@@ -48,7 +55,7 @@ public class ArgOption<T> {
         return this.has() ? this.value : this.defaultValue;
     }
 
-    protected void ifHas(Consumer<T> consumer) {
+    protected void ifHas(Consumer<? super T> consumer) {
         if (this.has()) {
             consumer.accept(this.value);
         }
